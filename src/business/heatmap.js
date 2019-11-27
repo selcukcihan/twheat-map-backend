@@ -24,8 +24,8 @@ function getFriendsHelper(client, userId, cursor, locations) {
         user_id: userId,
     })
     .then(res => {
+        locations = locations.concat(res.users.map(u => u.location));
         if (res.next_cursor_str !== "0") {
-            locations = locations.concat(res.users.map(u => u.location));
             return getFriendsHelper(client, userId, res.next_cursor_str, locations);
         } else {
             return locations.filter(l => l);
@@ -72,13 +72,5 @@ module.exports = exports = function(auth0Id) {
         })
         .then(res => res.json())
         .then(getFriends)
-        .then(res => {
-            console.log(res);
-            return res;
-        })
-        .then(maps.getCoordinates)
-        .then(res => {
-            console.log(JSON.stringify(res));
-            return res;
-        });
+        .then(maps.getCoordinates);
 }
