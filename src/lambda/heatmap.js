@@ -7,7 +7,7 @@ module.exports.handler = async (event, context) => {
             statusCode: 200,
             body: JSON.stringify(res),
             headers: {
-                "Access-Control-Allow-Origin": "selcukcihan.com",
+                "Access-Control-Allow-Origin": "https://twheat-map.selcukcihan.com",
                 "Access-Control-Allow-Credentials": true
             }
         };
