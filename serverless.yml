@@ -1,0 +1,67 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: twheat-map-backend
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+  stage: dev
+  region: us-east-1
+  profile: serverless-profile
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+plugins: # plugin'lerin sirasi onemli, serverless-offline-dotenv serverless-offline'den once gelmeli
+  - serverless-offline-dotenv
+  - serverless-offline
+
+functions:
+  authenticate:
+    handler: src/lambda/auth.handler
+    environment:
+      AUTH0_AUDIENCE: https://twheat-map.selcukcihan.com/map
+      AUTH0_TOKEN_ISSUER: https://selcukcihan.auth0.com/
+      AUTH0_JWKS_URI: https://selcukcihan.auth0.com/.well-known/jwks.json
+
+
+  heatmap:
+    handler: src/lambda/heatmap.handler
+    timeout: 30
+    events:
+      - http:
+          path: heatmap
+          method: get
+          cors: true
+          authorizer: authenticate
+
+    environment:
+      AUTH0_ADMIN_AUDIENCE: https://selcukcihan.auth0.com/api/v2/
+      AUTH0_ADMIN_CLIENT_SECRET: ${ssm:AUTH0_ADMIN_CLIENT_SECRET}
+      AUTH0_ADMIN_CLIENT_ID: ${ssm:AUTH0_ADMIN_CLIENT_ID}
+      AUTH0_TOKEN_URL: https://selcukcihan.auth0.com/oauth/token
+      AUTH0_ADMIN_GET_USER_URL: https://selcukcihan.auth0.com/api/v2/users/
+      TWITTER_CONSUMER_KEY: ${ssm:TWITTER_CONSUMER_KEY}
+      TWITTER_CONSUMER_SECRET: ${ssm:TWITTER_CONSUMER_SECRET}
