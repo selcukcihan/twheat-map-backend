@@ -17,8 +17,17 @@ const coordinatesMap = new Map(
 const citiesArray = Array.from(coordinatesMap.keys());
 
 function getCoordinates(locations) {
+    let locationMap = new Map();
     return locations
-        .map(l => stringSimilarity.findBestMatch(l, citiesArray).bestMatch.target)
+        .map(l => {
+            if (locationMap.has(l)) {
+                return locationMap.get(l);
+            } else {
+                let location = stringSimilarity.findBestMatch(l, citiesArray).bestMatch.target;
+                locationMap.set(l, location);
+                return location;
+            }
+        })
         .map(l => coordinatesMap.get(l));
 }
 
