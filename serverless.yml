@@ -19,11 +19,17 @@ service: twheat-map-backend
 
 provider:
   name: aws
-  runtime: nodejs10.x
+  runtime: nodejs12.x
 
   stage: dev
   region: us-east-1
   profile: serverless-profile
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - cloudwatch:PutMetricData
+      Resource: "*"
 
 # you can add packaging information here
 #package:
@@ -65,3 +71,4 @@ functions:
       AUTH0_ADMIN_GET_USER_URL: https://selcukcihan.auth0.com/api/v2/users/
       TWITTER_CONSUMER_KEY: ${ssm:TWITTER_CONSUMER_KEY}
       TWITTER_CONSUMER_SECRET: ${ssm:TWITTER_CONSUMER_SECRET}
+      CLOUDWATCH_NAMESPACE: "${self:service}/${self:provider.stage}"

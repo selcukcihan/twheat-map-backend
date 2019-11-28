@@ -5,6 +5,8 @@ const fetch = require('node-fetch');
 
 const maps = require("./maps");
 
+const { m, reportLatencies } = require("../util/metrics");
+
 var options = {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -59,18 +61,18 @@ module.exports = exports = function(auth0Id) {
         3. Detaydaki token ve secret'i alarak, twitter API'sini bu kullanici adina cagiriyoruz.
         4. Topladigimiz kullanici lokasyonlarini worldcities.json'daki koordinatlarla eslestiriyoruz.
     */
-
-    return fetch(process.env.AUTH0_TOKEN_URL, options)
+    return m("GetTokenFromAuth0", () => fetch(process.env.AUTH0_TOKEN_URL, options))()
         .then(res => res.json())
-        .then(res => {
+        .then(m("GetUserDetailsFromAuth0", res => {
             return fetch(process.env.AUTH0_ADMIN_GET_USER_URL + auth0Id, {
                 method: "GET",
                 headers: {
                     authorization: "Bearer " + res.access_token
                 },
             });
-        })
+        }))
         .then(res => res.json())
-        .then(getFriends)
-        .then(maps.getCoordinates);
+        .then(m("GetFriendsFromTwitter", getFriends))
+        .then(m("GetCoordinates", maps.getCoordinates))
+        .then(reportLatencies);
 }
