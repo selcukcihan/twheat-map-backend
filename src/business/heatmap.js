@@ -36,7 +36,7 @@ function getFriendsHelper(client, userId, cursor, locations) {
 }
 
 function getFriends(adminResponse) {
-    if (!adminResponse.identities || adminResponse.identities[0].provider !== "twitter") {
+    if (!adminResponse.identities || adminResponse.identities[0].provider !== "twitter") {
         throw new Error("IDP is not twitter.");
     }
 

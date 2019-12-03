@@ -32,13 +32,13 @@ provider:
       Resource: "*"
 
 # you can add packaging information here
-#package:
+package:
 #  include:
 #    - include-me.js
 #    - include-me-dir/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
+  exclude:
+    - exclude-me.js
+    - test/**
 
 plugins: # plugin'lerin sirasi onemli, serverless-offline-dotenv serverless-offline'den once gelmeli
   - serverless-offline-dotenv

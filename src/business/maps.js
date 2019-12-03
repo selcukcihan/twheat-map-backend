@@ -73,8 +73,8 @@ function findClosestMatch(friendLocation) {
     for (let i = 0; i < tokens.length; i++) {
         for (let j = 0; j < maps.length; j++) {
             if (maps[j].has(tokens[i])) {
-                result = getMinimumDistance(friendLocation, maps[j].get(tokens[i]));
-                if (closestMatch == null || closestMatch.similarity < result.similarity) {
+                const result = getMinimumDistance(friendLocation, maps[j].get(tokens[i]));
+                if (closestMatch == null || closestMatch.similarity < result.similarity) {
                     closestMatch = result;
                 }
             }

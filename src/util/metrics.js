@@ -1,4 +1,4 @@
-const { PerformanceObserver, performance } = require('perf_hooks');
+const performance = require('perf_hooks').performance;
 
 const AWS = require('aws-sdk');
 const cloudwatch = new AWS.CloudWatch();
@@ -8,7 +8,7 @@ const events = [];
 function measureFunction(label, promise) {
     let begin;
     return (response) => {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function(resolve/*, reject */) {
             begin = performance.now();
             resolve(response);
         })
