@@ -15,7 +15,7 @@
         "test": "jest --config=jest.config.js",
         "build": "eslint src",
         "package": "npm install",
-        "deploy": "sls deploy"
+        "deploy": "sls config credentials --provider aws --profile serverless-profile --key $AWS_ACCESS_KEY --secret $AWS_SECRET_ACCESS_KEY && sls deploy"
     },
     "dependencies": {
         "aws-sdk": "^2.580.0",
