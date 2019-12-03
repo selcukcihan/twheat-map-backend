@@ -13,7 +13,7 @@
     "license": "MIT",
     "scripts": {
         "test": "eslint src && jest --config=jest.config.js",
-        "deploy": "sls config credentials --provider aws --profile serverless-profile --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY && sls deploy"
+        "deploy": "sls deploy"
     },
     "dependencies": {
         "aws-sdk": "^2.580.0",
