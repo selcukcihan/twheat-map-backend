@@ -1,7 +1,11 @@
 const heatmap = require("../business/heatmap");
 
 module.exports.handler = async (event/*, context */) => {
-    return heatmap(event.requestContext.authorizer.principalId)
+    let continuation = ''
+    if (event.queryStringParameters && event.queryStringParameters.continuation) {
+        continuation = event.queryStringParameters.continuation
+    }
+    return heatmap(event.requestContext.authorizer.principalId, continuation)
     .then(res => {
         return {
             statusCode: 200,

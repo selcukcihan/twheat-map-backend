@@ -18,24 +18,24 @@ var options = {
     }),
 };
 
-function getFriendsHelper(client, userId, cursor, locations) {
+function getFriendsHelper(client, userId, cursor) {
     return client.get("friends/list", {
         skip_status: true,
         count: 200,
-        cursor: cursor,
+        cursor: cursor === '' ? "-1" : cursor,
         user_id: userId,
     })
     .then(res => {
-        locations = locations.concat(res.users.map(u => u.location));
-        if (res.next_cursor_str !== "0") {
-            return getFriendsHelper(client, userId, res.next_cursor_str, locations);
-        } else {
-            return locations.filter(l => l);
-        }
-    })
+        const locations = res.users.map(u => u.location);
+        const nextCursor = (res.next_cursor_str !== "0" ? res.next_cursor_str : '');
+        return {
+            locations: locations.filter(l => l),
+            continuation: nextCursor
+        };
+    });
 }
 
-function getFriends(adminResponse) {
+function getFriends(adminResponse, continuation) {
     if (!adminResponse.identities || adminResponse.identities[0].provider !== "twitter") {
         throw new Error("IDP is not twitter.");
     }
@@ -47,22 +47,28 @@ function getFriends(adminResponse) {
         access_token_secret: adminResponse.identities[0].access_token_secret
     };
     const client = new Twitter(options);
-    return getFriendsHelper(client, adminResponse.identities[0].user_id, "-1", []);
+    return getFriendsHelper(client, adminResponse.identities[0].user_id, continuation);
 }
 
-module.exports = exports = function(auth0Id) {
+module.exports = exports = function(auth0Id, continuation) {
     /*
         auth0Id: mesela "twitter|134182720" bunu kullanarak bu kullanicinin Auth0'dan detayini cekecegiz
         Bu detaya ihtiyac duymamizin sebebi, icerisinde twitter API'lerini cagirmak icin kullanacagimiz
         bir "access token" ve "access token secret" olmasidir.
+        continuation: twitter API'sinin pagination'u icin
 
         1. Auth0 admin API'sini cagirabilmek icin oncelikle bir token istiyoruz Auth0'dan.
         2. Bu token'i kullanarak, Auth0 admin API'sinden kullanicinin detayini cekiyoruz.
         3. Detaydaki token ve secret'i alarak, twitter API'sini bu kullanici adina cagiriyoruz.
         4. Topladigimiz kullanici lokasyonlarini worldcities.json'daki koordinatlarla eslestiriyoruz.
     */
+    let newContinuation = ''
     return m("GetTokenFromAuth0", () => fetch(process.env.AUTH0_TOKEN_URL, options))()
         .then(res => res.json())
+        .then(res => {
+            console.log(JSON.stringify(res));
+            return res;
+        })
         .then(m("GetUserDetailsFromAuth0", res => {
             return fetch(process.env.AUTH0_ADMIN_GET_USER_URL + auth0Id, {
                 method: "GET",
@@ -72,7 +78,15 @@ module.exports = exports = function(auth0Id) {
             });
         }))
         .then(res => res.json())
-        .then(m("GetFriendsFromTwitter", getFriends))
+        .then(m("GetFriendsFromTwitter", (adminResponse) => getFriends(adminResponse, continuation)))
+        .then(res => {
+            newContinuation = res.continuation
+            return res.locations
+        })
         .then(m("GetCoordinates", maps.getCoordinates))
-        .then(reportLatencies);
+        .then(reportLatencies)
+        .then(res => ({
+            locations: res,
+            continuation: newContinuation
+        }))
 }
