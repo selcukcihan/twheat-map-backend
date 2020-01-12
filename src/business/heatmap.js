@@ -32,7 +32,14 @@ function getFriendsHelper(client, userId, cursor) {
             locations: locations.filter(l => l),
             continuation: nextCursor
         };
-    });
+    })
+    .catch(err => {
+        console.log("Error from Twitter: " + JSON.stringify(err));
+        return {
+            locations: [],
+            continuation: ''
+        };
+    })
 }
 
 function getFriends(adminResponse, continuation) {
@@ -65,10 +72,6 @@ module.exports = exports = function(auth0Id, continuation) {
     let newContinuation = ''
     return m("GetTokenFromAuth0", () => fetch(process.env.AUTH0_TOKEN_URL, options))()
         .then(res => res.json())
-        .then(res => {
-            console.log(JSON.stringify(res));
-            return res;
-        })
         .then(m("GetUserDetailsFromAuth0", res => {
             return fetch(process.env.AUTH0_ADMIN_GET_USER_URL + auth0Id, {
                 method: "GET",
